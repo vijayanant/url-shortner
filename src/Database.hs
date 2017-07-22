@@ -2,14 +2,24 @@ module Database (
   getDbConnection,
   saveURI,
   retrieveURI,
-  R.Connection, -- exposed so that we can write proper type signatures 
+ 
+   -- exposed so that we can write proper type signatures
+  R.Connection,
+  HostName,
+  PortNumber
 ) where 
 
 import Database.Redis as R
-import Data.ByteString
+import Data.ByteString (ByteString)
+import Network.Socket (HostName, PortNumber)
 
-getDbConnection :: IO Connection
-getDbConnection = R.connect R.defaultConnectInfo
+ 
+getDbConnection :: HostName -> PortNumber -> IO Connection
+getDbConnection host port = do 
+  R.checkedConnect R.defaultConnectInfo 
+    { connectHost = host
+    , connectPort = PortNumber port
+    }
 
 saveURI :: ByteString -> ByteString -> Connection -> IO (Either Reply Status)
 saveURI code uri conn = runRedis conn $ R.set code uri
